@@ -1,32 +1,37 @@
-require('dotenv').config()
+const express = require("express");
+const mongoose = require("mongoose");
+const session = require("express-session");
+require("dotenv").config();
 
-const express = require('express')
-const mongoose = require('mongoose')
-const routes = require('./Routes/Routes')
+const cors = require("cors");
+const authRoutes = require("./routes/authRoutes");
+const hotelRoutes = require("./routes/hotelRoutes"); 
 
-//express app
-const app = express()
+const APP = express();
+APP.use(cors());
 
-//midleware
-app.use(express.json())
-app.use((req, res, next)  => {
-    console.log(req.path, req.method)
-    next()
-    
-} )
+APP.use(express.json());
+APP.use(session({
+    secret: 'votre_secret',
+    resave: false,
+    saveUninitialized: true,
+    cookie: { secure: false }
+}));
 
-// routes 
-app.use('/api/Routes', routes)
 
-//connect to db
 mongoose.connect(process.env.MONGO_URI)
-.then(() => {
-    // listen for requests
-    app.listen(process.env.PORT, () => {
-    console.log('connected to db & listening on port', process.env.PORT)
-    })
-})
-.catch((error) => {
-    console.log(error)
-})
+  .then(() => console.log("MongoDB connected"))
+  .catch((error) => console.error("MongoDB connection error:", error));
 
+
+APP.use("/api", authRoutes);
+APP.use("/api", hotelRoutes); 
+
+APP.use((req, res) => {
+  res.status(404).send('<h1> Page not found</h1>');
+});
+
+const PORT = process.env.PORT || 3000;
+APP.listen(PORT, () => {
+  console.log(`Server listening at port: ${PORT}`);
+});

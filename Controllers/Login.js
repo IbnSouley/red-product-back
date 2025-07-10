@@ -4,6 +4,7 @@ const User = require("../Models/User");
 
 module.exports = async (req, res) => {
     const { email, password } = req.body;
+    console.log("JWT_SECRET utilisé :", process.env.JWT_SECRET);
 
     try {
        
